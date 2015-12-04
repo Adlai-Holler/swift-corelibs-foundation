@@ -103,7 +103,7 @@ extension Dictionary : _ObjectiveCBridgeable {
 
 public class NSDictionary : NSObject, NSCopying, NSMutableCopying, NSSecureCoding, NSCoding {
     private let _cfinfo = _CFInfo(typeID: CFDictionaryGetTypeID())
-    internal var _storage = [NSObject: AnyObject]()
+    internal var _storage: [NSObject: AnyObject]
     
     public var count: Int {
         get {
@@ -136,10 +136,12 @@ public class NSDictionary : NSObject, NSCopying, NSMutableCopying, NSSecureCodin
     }
     
     public required init(objects: UnsafePointer<AnyObject>, forKeys keys: UnsafePointer<NSObject>, count cnt: Int) {
-        for var idx = 0; idx < cnt; idx++ {
-            let key = keys[idx].copy()
-            let value = objects[idx]
-            _storage[key as! NSObject] = value
+        _storage = Dictionary(minimumCapacity: cnt)
+        let keyBuf = UnsafeBufferPointer(start: keys, count: cnt)
+        let valBuf = UnsafeBufferPointer(start: objects, count: cnt)
+        for (key, value) in zip(keyBuf, valBuf) {
+            let copiedKey = key.copy() as! NSObject
+            _storage[copiedKey] = value
         }
     }
     
@@ -208,14 +210,9 @@ public class NSDictionary : NSObject, NSCopying, NSMutableCopying, NSSecureCodin
     public var allKeys: [AnyObject] {
         get {
             if self.dynamicType === NSDictionary.self || self.dynamicType === NSMutableDictionary.self {
-                return _storage.keys.map { $0 }
+                return Array(_storage.keys)
             } else {
-                var keys = [AnyObject]()
-                let enumerator = keyEnumerator()
-                while let key = enumerator.nextObject() {
-                    keys.append(key)
-                }
-                return keys
+                return Array(keyEnumerator())
             }
         }
     }
@@ -223,14 +220,9 @@ public class NSDictionary : NSObject, NSCopying, NSMutableCopying, NSSecureCodin
     public var allValues: [AnyObject] {
         get {
             if self.dynamicType === NSDictionary.self || self.dynamicType === NSMutableDictionary.self {
-                return _storage.values.map { $0 }
+                return Array(_storage.values)
             } else {
-                var values = [AnyObject]()
-                let enumerator = keyEnumerator()
-                while let key = enumerator.nextObject() {
-                    values.append(objectForKey(key)!)
-                }
-                return values
+                return keyEnumerator().map { key in objectForKey(key)! }
             }
         }
     }
@@ -245,10 +237,7 @@ public class NSDictionary : NSObject, NSCopying, NSMutableCopying, NSSecureCodin
                 objects.append(value)
             }
         } else {
-            
-            let enumerator = keyEnumerator()
-            while let key = enumerator.nextObject() {
-                let value = objectForKey(key)!
+            for (key, value) in self {
                 keys.append(key)
                 objects.append(value)
             }
@@ -318,15 +307,9 @@ public class NSDictionary : NSObject, NSCopying, NSMutableCopying, NSSecureCodin
     }
     
     public func objectsForKeys(keys: [NSObject], notFoundMarker marker: AnyObject) -> [AnyObject] {
-        var objects = [AnyObject]()
-        for key in keys {
-            if let object = objectForKey(key) {
-                objects.append(object)
-            } else {
-                objects.append(marker)
-            }
+        return keys.map { key in
+            objectForKey(key) ?? marker
         }
-        return objects
     }
     
     public func writeToFile(path: String, atomically useAuxiliaryFile: Bool) -> Bool { NSUnimplemented() }
@@ -337,15 +320,11 @@ public class NSDictionary : NSObject, NSCopying, NSMutableCopying, NSSecureCodin
     }
 
     public func enumerateKeysAndObjectsWithOptions(opts: NSEnumerationOptions, usingBlock block: (NSObject, AnyObject, UnsafeMutablePointer<ObjCBool>) -> Void) {
-        let count = self.count
-        var keys = [AnyObject]()
-        var objects = [AnyObject]()
-        getObjects(&objects, andKeys: &keys, count: count)
         var stop = ObjCBool(false)
-        for var idx = 0; idx < count; idx++ {
-            withUnsafeMutablePointer(&stop, { stop in
-                block(keys[idx] as! NSObject, objects[idx], stop)
-            })
+        for (key, object) in self {
+            withUnsafeMutablePointer(&stop) { stop in
+                block(key as! NSObject, object, stop)
+            }
 
             if stop {
                 break
