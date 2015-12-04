@@ -81,17 +81,17 @@ extension NSOrderedSet {
     public var array: [AnyObject] { NSUnimplemented() }
     public var set: Set<NSObject> { NSUnimplemented() }
     
-    public func enumerateObjectsUsingBlock(@noescape block: (AnyObject, Int, UnsafeMutablePointer<ObjCBool>) -> Void) { NSUnimplemented() }
-    public func enumerateObjectsWithOptions(opts: NSEnumerationOptions, @noescape usingBlock block: (AnyObject, Int, UnsafeMutablePointer<ObjCBool>) -> Void) { NSUnimplemented() }
-    public func enumerateObjectsAtIndexes(s: NSIndexSet, options opts: NSEnumerationOptions, @noescape usingBlock block: (AnyObject, Int, UnsafeMutablePointer<ObjCBool>) -> Void) { NSUnimplemented() }
+    public func enumerateObjectsUsingBlock(@noescape block: (AnyObject, Int, UnsafeMutablePointer<ObjCBool>) throws -> Void) rethrows { NSUnimplemented() }
+    public func enumerateObjectsWithOptions(opts: NSEnumerationOptions, @noescape usingBlock block: (AnyObject, Int, UnsafeMutablePointer<ObjCBool>) throws -> Void) rethrows { NSUnimplemented() }
+    public func enumerateObjectsAtIndexes(s: NSIndexSet, options opts: NSEnumerationOptions, @noescape usingBlock block: (AnyObject, Int, UnsafeMutablePointer<ObjCBool>) throws -> Void) rethrows { NSUnimplemented() }
     
-    public func indexOfObjectPassingTest(@noescape predicate: (AnyObject, Int, UnsafeMutablePointer<ObjCBool>) -> Bool) -> Int { NSUnimplemented() }
-    public func indexOfObjectWithOptions(opts: NSEnumerationOptions, @noescape passingTest predicate: (AnyObject, Int, UnsafeMutablePointer<ObjCBool>) -> Bool) -> Int { NSUnimplemented() }
-    public func indexOfObjectAtIndexes(s: NSIndexSet, options opts: NSEnumerationOptions, @noescape passingTest predicate: (AnyObject, Int, UnsafeMutablePointer<ObjCBool>) -> Bool) -> Int { NSUnimplemented() }
+    public func indexOfObjectPassingTest(@noescape predicate: (AnyObject, Int, UnsafeMutablePointer<ObjCBool>) throws -> Bool) rethrows -> Int { NSUnimplemented() }
+    public func indexOfObjectWithOptions(opts: NSEnumerationOptions, @noescape passingTest predicate: (AnyObject, Int, UnsafeMutablePointer<ObjCBool>) throws -> Bool) rethrows -> Int { NSUnimplemented() }
+    public func indexOfObjectAtIndexes(s: NSIndexSet, options opts: NSEnumerationOptions, @noescape passingTest predicate: (AnyObject, Int, UnsafeMutablePointer<ObjCBool>) throws -> Bool) rethrows -> Int { NSUnimplemented() }
     
-    public func indexesOfObjectsPassingTest(@noescape predicate: (AnyObject, Int, UnsafeMutablePointer<ObjCBool>) -> Bool) -> NSIndexSet { NSUnimplemented() }
-    public func indexesOfObjectsWithOptions(opts: NSEnumerationOptions, @noescape passingTest predicate: (AnyObject, Int, UnsafeMutablePointer<ObjCBool>) -> Bool) -> NSIndexSet { NSUnimplemented() }
-    public func indexesOfObjectsAtIndexes(s: NSIndexSet, options opts: NSEnumerationOptions, @noescape passingTest predicate: (AnyObject, Int, UnsafeMutablePointer<ObjCBool>) -> Bool) -> NSIndexSet { NSUnimplemented() }
+    public func indexesOfObjectsPassingTest(@noescape predicate: (AnyObject, Int, UnsafeMutablePointer<ObjCBool>) throws -> Bool) rethrows -> NSIndexSet { NSUnimplemented() }
+    public func indexesOfObjectsWithOptions(opts: NSEnumerationOptions, @noescape passingTest predicate: (AnyObject, Int, UnsafeMutablePointer<ObjCBool>) throws -> Bool) rethrows -> NSIndexSet { NSUnimplemented() }
+    public func indexesOfObjectsAtIndexes(s: NSIndexSet, options opts: NSEnumerationOptions, @noescape passingTest predicate: (AnyObject, Int, UnsafeMutablePointer<ObjCBool>) throws -> Bool) rethrows -> NSIndexSet { NSUnimplemented() }
     
     public func indexOfObject(object: AnyObject, inSortedRange range: NSRange, options opts: NSBinarySearchingOptions, @noescape usingComparator cmp: NSComparator) -> Int { NSUnimplemented() } // binary search
     

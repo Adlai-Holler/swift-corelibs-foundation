@@ -352,7 +352,7 @@ extension NSData {
             close(fd)
         }
 
-        try self.enumerateByteRangesUsingBlockRethrows { (buf, range, stop) in
+        try self.enumerateByteRangesUsingBlock { (buf, range, stop) in
             if range.length > 0 {
                 do {
                     try NSData.writeToFileDescriptor(fd, path: path, buf: buf, length: range.length)
@@ -381,25 +381,11 @@ extension NSData {
             }
         }
     }
-    
-    internal func enumerateByteRangesUsingBlockRethrows(@noescape block: (UnsafePointer<Void>, NSRange, UnsafeMutablePointer<Bool>) throws -> Void) throws {
-        var err : ErrorType? = nil
-        self.enumerateByteRangesUsingBlock() { (buf, range, stop) -> Void in
-            do {
-                try block(buf, range, stop)
-            } catch let e {
-                err = e
-            }
-        }
-        if let err = err {
-            throw err
-        }
-    }
 
-    public func enumerateByteRangesUsingBlock(@noescape block: (UnsafePointer<Void>, NSRange, UnsafeMutablePointer<Bool>) -> Void) {
+    public func enumerateByteRangesUsingBlock(@noescape block: (UnsafePointer<Void>, NSRange, UnsafeMutablePointer<Bool>) throws -> Void) rethrows {
         var stop = false
-        withUnsafeMutablePointer(&stop) { stopPointer in
-            block(bytes, NSMakeRange(0, length), stopPointer)
+        try withUnsafeMutablePointer(&stop) { stopPointer in
+            try block(bytes, NSMakeRange(0, length), stopPointer)
         }
     }
 }

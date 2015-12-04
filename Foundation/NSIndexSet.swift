@@ -330,7 +330,7 @@ public class NSIndexSet : NSObject, NSCopying, NSMutableCopying, NSSecureCoding 
         return false
     }
     
-    internal func _enumerateWithOptions<P, R>(opts : NSEnumerationOptions, range: NSRange, paramType: P.Type, returnType: R.Type, @noescape block: (P, UnsafeMutablePointer<ObjCBool>) -> R) -> Int? {
+    internal func _enumerateWithOptions<P, R>(opts : NSEnumerationOptions, range: NSRange, paramType: P.Type, returnType: R.Type, @noescape block: (P, UnsafeMutablePointer<ObjCBool>) throws -> R) rethrows -> Int? {
         guard !opts.contains(.Concurrent) else {
             NSUnimplemented()
         }
@@ -350,7 +350,7 @@ public class NSIndexSet : NSObject, NSCopying, NSMutableCopying, NSSecureCoding 
             let intersection = NSIntersectionRange(curRange, range)
             if passRanges {
                 if intersection.length > 0 {
-                    block(intersection as! P, &stop)
+                    try block(intersection as! P, &stop)
                 }
                 if stop {
                     break outer
@@ -360,13 +360,13 @@ public class NSIndexSet : NSObject, NSCopying, NSMutableCopying, NSSecureCoding 
                 let indexes = reverse ? maxIndex.stride(through: intersection.location, by: -1) : intersection.location.stride(through: maxIndex, by: 1)
                 for idx in indexes {
                     if findIndex {
-                        let found : Bool = block(idx as! P, &stop) as! Bool
+                        let found : Bool = try block(idx as! P, &stop) as! Bool
                         if found {
                             result = idx
                             stop = true
                         }
                     } else {
-                        block(idx as! P, &stop)
+                        try block(idx as! P, &stop)
                     }
                     if stop {
                         break outer
@@ -378,36 +378,36 @@ public class NSIndexSet : NSObject, NSCopying, NSMutableCopying, NSSecureCoding 
         return result
     }
     
-    public func enumerateIndexesUsingBlock(@noescape block: (Int, UnsafeMutablePointer<ObjCBool>) -> Void) {
-        enumerateIndexesWithOptions([], usingBlock: block)
+    public func enumerateIndexesUsingBlock(@noescape block: (Int, UnsafeMutablePointer<ObjCBool>) throws -> Void) rethrows {
+        try enumerateIndexesWithOptions([], usingBlock: block)
     }
-    public func enumerateIndexesWithOptions(opts: NSEnumerationOptions, @noescape usingBlock block: (Int, UnsafeMutablePointer<ObjCBool>) -> Void) {
-        _enumerateWithOptions(opts, range: NSMakeRange(0, Int.max), paramType: Int.self, returnType: Void.self, block: block)
+    public func enumerateIndexesWithOptions(opts: NSEnumerationOptions, @noescape usingBlock block: (Int, UnsafeMutablePointer<ObjCBool>) throws -> Void) rethrows {
+        try _enumerateWithOptions(opts, range: NSMakeRange(0, Int.max), paramType: Int.self, returnType: Void.self, block: block)
     }
-    public func enumerateIndexesInRange(range: NSRange, options opts: NSEnumerationOptions, @noescape usingBlock block: (Int, UnsafeMutablePointer<ObjCBool>) -> Void) {
-        _enumerateWithOptions(opts, range: range, paramType: Int.self, returnType: Void.self, block: block)
-    }
-    
-    public func indexPassingTest(@noescape predicate: (Int, UnsafeMutablePointer<ObjCBool>) -> Bool) -> Int {
-        return indexWithOptions([], passingTest: predicate)
-    }
-    public func indexWithOptions(opts: NSEnumerationOptions, @noescape passingTest predicate: (Int, UnsafeMutablePointer<ObjCBool>) -> Bool) -> Int {
-        return _enumerateWithOptions(opts, range: NSMakeRange(0, Int.max), paramType: Int.self, returnType: Bool.self, block: predicate) ?? NSNotFound
-    }
-    public func indexInRange(range: NSRange, options opts: NSEnumerationOptions, @noescape passingTest predicate: (Int, UnsafeMutablePointer<ObjCBool>) -> Bool) -> Int {
-        return _enumerateWithOptions(opts, range: range, paramType: Int.self, returnType: Bool.self, block: predicate) ?? NSNotFound
+    public func enumerateIndexesInRange(range: NSRange, options opts: NSEnumerationOptions, @noescape usingBlock block: (Int, UnsafeMutablePointer<ObjCBool>) throws -> Void) rethrows {
+        try _enumerateWithOptions(opts, range: range, paramType: Int.self, returnType: Void.self, block: block)
     }
     
-    public func indexesPassingTest(@noescape predicate: (Int, UnsafeMutablePointer<ObjCBool>) -> Bool) -> NSIndexSet {
-        return indexesInRange(NSMakeRange(0, Int.max), options: [], passingTest: predicate)
+    public func indexPassingTest(@noescape predicate: (Int, UnsafeMutablePointer<ObjCBool>) throws -> Bool) rethrows -> Int {
+        return try indexWithOptions([], passingTest: predicate)
     }
-    public func indexesWithOptions(opts: NSEnumerationOptions, @noescape passingTest predicate: (Int, UnsafeMutablePointer<ObjCBool>) -> Bool) -> NSIndexSet {
-        return indexesInRange(NSMakeRange(0, Int.max), options: opts, passingTest: predicate)
+    public func indexWithOptions(opts: NSEnumerationOptions, @noescape passingTest predicate: (Int, UnsafeMutablePointer<ObjCBool>) throws -> Bool) rethrows -> Int {
+        return try _enumerateWithOptions(opts, range: NSMakeRange(0, Int.max), paramType: Int.self, returnType: Bool.self, block: predicate) ?? NSNotFound
     }
-    public func indexesInRange(range: NSRange, options opts: NSEnumerationOptions, @noescape passingTest predicate: (Int, UnsafeMutablePointer<ObjCBool>) -> Bool) -> NSIndexSet {
+    public func indexInRange(range: NSRange, options opts: NSEnumerationOptions, @noescape passingTest predicate: (Int, UnsafeMutablePointer<ObjCBool>) throws -> Bool) rethrows -> Int {
+        return try _enumerateWithOptions(opts, range: range, paramType: Int.self, returnType: Bool.self, block: predicate) ?? NSNotFound
+    }
+    
+    public func indexesPassingTest(@noescape predicate: (Int, UnsafeMutablePointer<ObjCBool>) throws -> Bool) rethrows -> NSIndexSet {
+        return try indexesInRange(NSMakeRange(0, Int.max), options: [], passingTest: predicate)
+    }
+    public func indexesWithOptions(opts: NSEnumerationOptions, @noescape passingTest predicate: (Int, UnsafeMutablePointer<ObjCBool>) throws -> Bool) rethrows -> NSIndexSet {
+        return try indexesInRange(NSMakeRange(0, Int.max), options: opts, passingTest: predicate)
+    }
+    public func indexesInRange(range: NSRange, options opts: NSEnumerationOptions, @noescape passingTest predicate: (Int, UnsafeMutablePointer<ObjCBool>) throws -> Bool) rethrows -> NSIndexSet {
         let result = NSMutableIndexSet()
-        _enumerateWithOptions(opts, range: range, paramType: Int.self, returnType: Void.self) { idx, stop in
-            if predicate(idx, stop) {
+        try _enumerateWithOptions(opts, range: range, paramType: Int.self, returnType: Void.self) { idx, stop in
+            if try predicate(idx, stop) {
                 result.addIndex(idx)
             }
         }
@@ -419,14 +419,14 @@ public class NSIndexSet : NSObject, NSCopying, NSMutableCopying, NSSecureCoding 
      
      If the specified range for enumeration intersects a range of contiguous indexes in the receiver, then the block will be invoked with the intersection of those two ranges.
     */
-    public func enumerateRangesUsingBlock(@noescape block: (NSRange, UnsafeMutablePointer<ObjCBool>) -> Void) {
-        enumerateRangesWithOptions([], usingBlock: block)
+    public func enumerateRangesUsingBlock(@noescape block: (NSRange, UnsafeMutablePointer<ObjCBool>) throws -> Void) rethrows {
+        try enumerateRangesWithOptions([], usingBlock: block)
     }
-    public func enumerateRangesWithOptions(opts: NSEnumerationOptions, @noescape usingBlock block: (NSRange, UnsafeMutablePointer<ObjCBool>) -> Void) {
-        _enumerateWithOptions(opts, range: NSMakeRange(0, Int.max), paramType: NSRange.self, returnType: Void.self, block: block)
+    public func enumerateRangesWithOptions(opts: NSEnumerationOptions, @noescape usingBlock block: (NSRange, UnsafeMutablePointer<ObjCBool>) throws -> Void) rethrows {
+        try _enumerateWithOptions(opts, range: NSMakeRange(0, Int.max), paramType: NSRange.self, returnType: Void.self, block: block)
     }
-    public func enumerateRangesInRange(range: NSRange, options opts: NSEnumerationOptions, @noescape usingBlock block: (NSRange, UnsafeMutablePointer<ObjCBool>) -> Void) {
-        _enumerateWithOptions(opts, range: range, paramType: NSRange.self, returnType: Void.self, block: block)
+    public func enumerateRangesInRange(range: NSRange, options opts: NSEnumerationOptions, @noescape usingBlock block: (NSRange, UnsafeMutablePointer<ObjCBool>) throws -> Void) rethrows {
+        try _enumerateWithOptions(opts, range: range, paramType: NSRange.self, returnType: Void.self, block: block)
     }
 
 

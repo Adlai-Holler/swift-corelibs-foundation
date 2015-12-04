@@ -52,6 +52,7 @@ public struct NSEnumerationOptions : OptionSetType {
     public static let Reverse = NSEnumerationOptions(rawValue: UInt(1 << 1))
 }
 
+// TODO: `throws`?
 public typealias NSComparator = (AnyObject, AnyObject) -> NSComparisonResult
 
 public let NSNotFound: Int = Int.max
