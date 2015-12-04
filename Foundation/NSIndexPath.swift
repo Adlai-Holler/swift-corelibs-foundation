@@ -15,10 +15,7 @@ public class NSIndexPath : NSObject, NSCopying, NSSecureCoding {
         _indexes = []
     }
     public init(indexes: UnsafePointer<Int>, length: Int) {
-        _indexes = []
-        for var idx = 0; idx < length; idx++ {
-            _indexes.append(indexes[idx])
-        }
+        _indexes = Array(UnsafeBufferPointer(start: indexes, count: length))
     }
     
     private init(indexes: [Int]) {
@@ -43,11 +40,7 @@ public class NSIndexPath : NSObject, NSCopying, NSSecureCoding {
         return NSIndexPath(indexes: _indexes + [index])
     }
     public func indexPathByRemovingLastIndex() -> NSIndexPath {
-        if _indexes.count <= 1 {
-            return NSIndexPath(indexes: [])
-        } else {
-            return NSIndexPath(indexes: [Int](_indexes[0..<_indexes.count - 1]))
-        }
+        return NSIndexPath(indexes: Array(_indexes.dropLast()))
     }
     
     public func indexAtPosition(position: Int) -> Int {
@@ -65,8 +58,11 @@ public class NSIndexPath : NSObject, NSCopying, NSSecureCoding {
         It is the developer’s responsibility to allocate the memory for the C array.
      */
     public func getIndexes(indexes: UnsafeMutablePointer<Int>, range positionRange: NSRange) {
-        for (pos, idx) in _indexes[positionRange.location ..< NSMaxRange(positionRange)].enumerate() {
-            indexes.advancedBy(pos).memory = idx
+        precondition(NSMaxRange(positionRange) < length, "Range extends beyond length of index path.")
+
+        _indexes.withUnsafeMutableBufferPointer { buf in
+            let base = buf.baseAddress.advancedBy(positionRange.location)
+            indexes.initializeFrom(base, count: positionRange.length)
         }
     }
     
@@ -75,7 +71,7 @@ public class NSIndexPath : NSObject, NSCopying, NSSecureCoding {
     public func compare(otherObject: NSIndexPath) -> NSComparisonResult {
         let thisLength = length
         let otherLength = otherObject.length
-        let minLength = thisLength >= otherLength ? otherLength : thisLength
+        let minLength = min(thisLength, otherLength)
         for pos in 0..<minLength {
             let otherValue = otherObject.indexAtPosition(pos)
             let thisValue = indexAtPosition(pos)
