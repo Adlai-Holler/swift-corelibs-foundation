@@ -111,15 +111,15 @@ extension NSDate {
     }
     
     public func earlierDate(anotherDate: NSDate) -> NSDate {
-        if self.timeIntervalSinceReferenceDate < anotherDate.timeIntervalSinceReferenceDate {
-            return self
-        } else {
+        if case .OrderedDescending = compare(anotherDate) {
             return anotherDate
+        } else {
+            return self
         }
     }
     
     public func laterDate(anotherDate: NSDate) -> NSDate {
-        if self.timeIntervalSinceReferenceDate < anotherDate.timeIntervalSinceReferenceDate {
+        if case .OrderedAscending = compare(anotherDate) {
             return anotherDate
         } else {
             return self
