@@ -127,19 +127,18 @@ extension NSDate {
     }
     
     public func compare(other: NSDate) -> NSComparisonResult {
-        let t1 = self.timeIntervalSinceReferenceDate
-        let t2 = other.timeIntervalSinceReferenceDate
-        if t1 < t2 {
-            return .OrderedAscending
-        } else if t1 > t2 {
+        switch timeIntervalSinceDate(other) {
+        case let ti where ti > 0:
             return .OrderedDescending
-        } else {
+        case let ti where ti < 0:
+            return .OrderedAscending
+        default:
             return .OrderedSame
         }
     }
     
     public func isEqualToDate(otherDate: NSDate) -> Bool {
-        return timeIntervalSinceReferenceDate == otherDate.timeIntervalSinceReferenceDate
+        return compare(otherDate) == .OrderedSame
     }
 }
 
